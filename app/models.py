@@ -1,5 +1,39 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+class Experience(BaseModel):
+    company: str = ""
+    role: str = ""
+    start_date: str = ""
+    end_date: str = ""
+    location: str = ""
+    responsibilities: list[str]
+    technologies: list[str] = Field(default_factory=list)
+
+class Project(BaseModel):
+    project_name: str
+    project_description: list[str]
+    technologies: list[str]
+
+class Education(BaseModel):
+    institution: str
+    degree: str
+    field_of_study: str = ""
+    start_date: str = ""
+    end_date: str = ""
+    location: str = ""
+    cgpa: str = ""
+
+class SkillCategory(BaseModel):
+    category: str = ""
+    skills: list[str]
+
+class PersonalDetails(BaseModel):
+    name: str
+    email: str = ""
+    phone_number: str = ""
+    linkedin: str = ""
+    github: str = ""
 
 class Job(BaseModel):
     job_id: str
@@ -13,13 +47,15 @@ class Job(BaseModel):
     source: str
 
 class Resume(BaseModel):
-    name: str
-    summary: str
-    education: list[str]
-    experience: list[str]
-    projects: list[str]
-    skills: list[str]
-    certifications: list[str]
+    personal_details: PersonalDetails
+    summary: str = ""
+    education: list[Education] = Field(default_factory=list)
+    experience: list[Experience] = Field(default_factory=list)
+    projects: list[Project] = Field(default_factory=list)
+    internships: list[Experience] = Field(default_factory=list)
+    skills: list[SkillCategory] = Field(default_factory=list)
+    certifications: list[str] = Field(default_factory=list)
+    achievements: list[str] = Field(default_factory=list)
 
 class Application(BaseModel):
     job_id: str

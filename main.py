@@ -1,71 +1,35 @@
 from datetime import datetime
 from pydantic import ValidationError
-from app.models import Job, Resume, Application
+from app.models import Job, Resume, Application, Experience, Project, Education, PersonalDetails
 from app.storage import save_json, load_json
-
-job_1 = Job(
-    job_id= "job_001",
-    title="AI Engineer",
-    company="Microsoft",
-    location="Hyderabad",
-    url="https://example.com/job",
-    description="Looking for an AI Engineer...",
-    skills=["Python", "LangChain", "RAG"],
-    experience="2-4 years",
-    source="LinkedIn"
-)
-
-job_2 = Job(
-    job_id= "job_002",
-    title="AI Engineer",
-    company="Microsoft",
-    location="Hyderabad",
-    url="https://example.com/job",
-    description="Looking for an AI Engineer...",
-    skills=["Python", "LangChain", "RAG"],
-    experience="2-4 years",
-    source="LinkedIn"
-)
-
-job = [job_1, job_2]
-
-
-resume = Resume(
-    name="Candidate",
-    summary="Python developer transitioning into AI Engineering",
-    education=["B.Tech in Computer Science"],
-    experience=["Python Developer at Infosys"],
-    projects=["AI Job Hunter"],
-    skills=["Python", "SQL", "LangChain"],
-    certifications=["Generative AI Certification"]
-)
-
-application = Application(
-    job_id = "job_001",
-    resume_version = "master_v1",
-    match_score = 82,
-    ats_score = 76,
-    status = "saved",
-    applied_at = datetime(2026, 8, 20, 2, 58, 0),
-    notes = "Good match for Python + GenAI"
-)
+from app.pdf_extractor import extract_text
+from app.resume_parser import parse_resume, parse_education, parse_experience, parse_projects, parse_skills, combine_bullet_lines
 
 job_json_path = r"D:\Projects\AI-Job-Hunter\data\job.json"
 resume_json_path = r"D:\Projects\AI-Job-Hunter\data\resume.json"
 application_json_path = r"D:\Projects\AI-Job-Hunter\data\application.json"
 
-save_json(job, job_json_path)
-save_json(resume, resume_json_path)
-save_json(application, application_json_path)
-
-job_data = load_json(job_json_path)
-resume_data = load_json(resume_json_path)
-application_data = load_json(application_json_path)
-
-job_model = [Job.model_validate(i) for i in job_data]
+resume_path = r"D:\Projects\AI-Job-Hunter\documents\Preyansh_Jain_AI_Engineer_Resume_2.pdf"
+text, personal_details = extract_text(resume_path)
+if not text:
+    print("Resume extraction failed!")
+    exit()
 try:
-    resume_model = Resume.model_validate(resume_data)
-except ValidationError as e:
-    print(f"Error: {e}")
-application_model = Application.model_validate(application_data)
-
+    sections = parse_resume(text)
+    sections["personal_details"] = personal_details
+    sections["education"] = parse_education(sections["education"])
+    sections["experience"] = parse_experience(sections["experience"])
+    sections["projects"] = parse_projects(sections.get("projects", []))
+    sections["skills"] = parse_skills(sections["skills"])
+    sections["certifications"] = combine_bullet_lines(sections.get("certifications", []))
+    sections["internships"] = parse_experience(sections.get("internships", []))
+    sections["achievements"] = combine_bullet_lines(sections.get("achievements", []))
+    resume = Resume.model_validate(sections)
+    save_json(resume, resume_json_path)
+    loaded_data = load_json(resume_json_path)
+    loaded_resume = Resume.model_validate(loaded_data)
+    assert resume == loaded_resume
+    print("Save/load test passed!")
+except ValidationError as error:
+    print("Resume validation failed:")
+    print(error)
