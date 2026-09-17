@@ -7,13 +7,13 @@ class Experience(BaseModel):
     start_date: str = ""
     end_date: str = ""
     location: str = ""
-    responsibilities: list[str]
+    responsibilities: list[str] = Field(default_factory=list)
     technologies: list[str] = Field(default_factory=list)
 
 class Project(BaseModel):
-    project_name: str
-    project_description: list[str]
-    technologies: list[str]
+    project_name: str = ""
+    project_description: list[str] = Field(default_factory=list)
+    technologies: list[str] = Field(default_factory=list)
 
 class Education(BaseModel):
     institution: str
@@ -26,7 +26,7 @@ class Education(BaseModel):
 
 class SkillCategory(BaseModel):
     category: str = ""
-    skills: list[str]
+    skills: list[str] = Field(default_factory=list)
 
 class PersonalDetails(BaseModel):
     name: str

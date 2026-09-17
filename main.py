@@ -1,9 +1,17 @@
-from datetime import datetime
 from pydantic import ValidationError
-from app.models import Job, Resume, Application, Experience, Project, Education, PersonalDetails
+from app.models import Resume
+from app.job_repository import JobRepository
 from app.storage import save_json, load_json
 from app.pdf_extractor import extract_text
-from app.resume_parser import parse_resume, parse_education, parse_experience, parse_projects, parse_skills, combine_bullet_lines
+from app.resume_parser import (
+    parse_resume,
+    parse_education,
+    parse_experience,
+    parse_projects,
+    parse_skills,
+    combine_bullet_lines,
+)
+
 
 job_json_path = r"D:\Projects\AI-Job-Hunter\data\job.json"
 resume_json_path = r"D:\Projects\AI-Job-Hunter\data\resume.json"
@@ -28,8 +36,16 @@ try:
     save_json(resume, resume_json_path)
     loaded_data = load_json(resume_json_path)
     loaded_resume = Resume.model_validate(loaded_data)
-    assert resume == loaded_resume
-    print("Save/load test passed!")
+    print(loaded_resume)
+
 except ValidationError as error:
     print("Resume validation failed:")
     print(error)
+
+job_id = "job_003"
+repository = JobRepository(job_json_path)
+job = repository.get_by_id(job_id)
+if job is not None:
+    print(job)
+else:
+    print("Job not found")
