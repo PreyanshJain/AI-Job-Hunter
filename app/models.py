@@ -35,6 +35,14 @@ class PersonalDetails(BaseModel):
     linkedin: str = ""
     github: str = ""
 
+class ProcessedJob(BaseModel):
+    job_id: str
+    skills: list[str] 
+    experience: str = ""
+    responsibilities:list[str] = Field(default_factory=list)
+    education: list[str] = Field(default_factory=list)
+    keywords: list[str] = Field(default_factory=list)
+
 class Job(BaseModel):
     job_id: str
     title: str

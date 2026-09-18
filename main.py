@@ -3,6 +3,7 @@ from app.models import Resume
 from app.job_repository import JobRepository
 from app.storage import save_json, load_json
 from app.pdf_extractor import extract_text
+from app.job_processor import process_job
 from app.resume_parser import (
     parse_resume,
     parse_education,
@@ -36,16 +37,21 @@ try:
     save_json(resume, resume_json_path)
     loaded_data = load_json(resume_json_path)
     loaded_resume = Resume.model_validate(loaded_data)
-    print(loaded_resume)
 
 except ValidationError as error:
     print("Resume validation failed:")
     print(error)
 
-job_id = "job_003"
 repository = JobRepository(job_json_path)
-job = repository.get_by_id(job_id)
-if job is not None:
-    print(job)
-else:
-    print("Job not found")
+jobs = repository.get_all()
+for job in jobs:
+    processed_job = process_job(job)
+    processed_job_dict = {
+        "job_id": processed_job.job_id,
+        "skills": processed_job.skills,
+        "experience": processed_job.experience,
+        "responsibilities": processed_job.responsibilities,
+        "education": processed_job.education,
+        "keywords": processed_job.keywords,
+    }
+    print(processed_job_dict)
