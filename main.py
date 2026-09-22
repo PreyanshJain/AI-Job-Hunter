@@ -1,9 +1,10 @@
 from pydantic import ValidationError
-from app.models import Resume
+from app.models import Resume, MatchResult
 from app.job_repository import JobRepository
 from app.storage import save_json, load_json
 from app.pdf_extractor import extract_text
 from app.job_processor import process_job
+from app.matching_engine import extract_resume_skills, match_skills, calculate_match_score
 from app.resume_parser import (
     parse_resume,
     parse_education,
@@ -37,21 +38,25 @@ try:
     save_json(resume, resume_json_path)
     loaded_data = load_json(resume_json_path)
     loaded_resume = Resume.model_validate(loaded_data)
+    resume_skills = extract_resume_skills(loaded_resume)
 
 except ValidationError as error:
     print("Resume validation failed:")
     print(error)
+    raise
 
 repository = JobRepository(job_json_path)
 jobs = repository.get_all()
+match_results = []
 for job in jobs:
     processed_job = process_job(job)
-    processed_job_dict = {
-        "job_id": processed_job.job_id,
-        "skills": processed_job.skills,
-        "experience": processed_job.experience,
-        "responsibilities": processed_job.responsibilities,
-        "education": processed_job.education,
-        "keywords": processed_job.keywords,
-    }
-    print(processed_job_dict)
+    matched_skills, missing_skills = match_skills(resume_skills, processed_job.skills)
+    score = calculate_match_score(matched_skills,  processed_job.skills)
+    match_results.append(MatchResult(
+            job_id=processed_job.job_id,
+            match_score=score,
+            matched_skills=matched_skills,
+            missing_skills=missing_skills,
+        )
+    )
+print(match_results)

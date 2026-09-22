@@ -73,3 +73,9 @@ class Application(BaseModel):
     status: str
     applied_at: datetime
     notes: str
+
+class MatchResult(BaseModel):
+    job_id: str
+    match_score: float
+    matched_skills: list[str] = Field(default_factory=list)
+    missing_skills: list[str] = Field(default_factory=list)
