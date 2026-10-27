@@ -23,7 +23,7 @@ def test_match_skills():
     resume_skills = ["python", "rag", "docker"]
     job_skills = ["python", "langchain", "rag", "fastapi"]
 
-    matched_skills, missing_skills = match_skills(resume_skills, job_skills)
+    matched_skills, missing_skills, remaining_resume_skills = match_skills(resume_skills, job_skills)
 
     assert matched_skills == ["python", "rag"]
     assert missing_skills == ["langchain", "fastapi"]

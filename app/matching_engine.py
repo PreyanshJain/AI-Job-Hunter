@@ -5,15 +5,17 @@ def extract_resume_skills(resume: Resume) -> list[str]:
     return [normalize_text(skill) for category in resume.skills for skill in category.skills]
 
 
-def match_skills(resume_skills: list[str], job_skills: list[str]) -> tuple[list[str], list[str]]:
+def match_skills(resume_skills: list[str], job_skills: list[str]) -> tuple[list[str], list[str], list[str]]:
     matched_skills = []
     missing_skills = []
+    remaining_resume_skills = resume_skills.copy()
     for skill in job_skills:
         if skill in resume_skills:
             matched_skills.append(skill)
+            remaining_resume_skills.remove(skill)
         else:
             missing_skills.append(skill)
-    return matched_skills, missing_skills
+    return matched_skills, missing_skills, remaining_resume_skills
 
 def calculate_match_score(matched_skills: list[str], job_skills: list[str]) -> float:
     if not job_skills:

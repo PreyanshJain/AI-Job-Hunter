@@ -2,3 +2,4 @@ pydantic
 pytest
 pypdf
 pdfplumber
+ollama
