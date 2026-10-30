@@ -10,17 +10,25 @@ def test_process_job_normalizes_all_skills():
         location="Bangalore",
         url="https://www.cbre.com",
         description= "We are seeking a Software Developer to design, build, and maintain efficient software applications.",
-        skills= ["Python", "Java", "JavaScript", "C++"],
+        skills= ["Python", "Java", "JavaScript", "C++", "scikit‑learn"],
         experience= "3 years",
         source="Naukri"
     )
-    skills = [normalize_text(skill) for skill in job.skills]
     processed_job = process_job(job)
     assert processed_job.skills == [
         "python",
         "java",
         "javascript",
-        "c++"
+        "c++",
+        "scikit-learn"
     ]
     assert job.experience == processed_job.experience
     assert job.job_id == processed_job.job_id
+    assert processed_job.skills[-1] == "scikit-learn"
+
+
+def test_normalize_text_handles_unicode_hyphen():
+    unicode_hyphen = normalize_text("scikit‑learn")
+    regular_hyphen = normalize_text("scikit-learn")
+
+    assert unicode_hyphen == regular_hyphen

@@ -15,7 +15,7 @@ def test_extract_resume_skills():
     )
     resume_skills = extract_resume_skills(resume)
 
-    assert resume_skills == ['python', 'sql', 'generative ai', 'nlp', 'llms', 'prompt engineering', 'text classification', 'sentiment analysis', 'langchain', 'hugging face', 'scikit‑learn', 'nltk', 'spacy', 'numpy', 'pandas', 'embeddings', 'vector search', 'rag', 'context retrieval', 'prompt design', 'mysql', 'oracle sql', 'git', 'github', 'jupyter notebook', 'vs code']
+    assert resume_skills == ['python', 'sql', 'generative ai', 'nlp', 'llms', 'prompt engineering', 'text classification', 'sentiment analysis', 'langchain', 'hugging face', 'scikit-learn', 'nltk', 'spacy', 'numpy', 'pandas', 'embeddings', 'vector search', 'rag', 'context retrieval', 'prompt design', 'mysql', 'oracle sql', 'git', 'github', 'jupyter notebook', 'vs code']
 
 
 

@@ -61,109 +61,103 @@ for job in jobs:
     if missing_skills and remaining_resume_skills:
         for missing_skill in missing_skills.copy():
             prompt = f"""
-            You are a strict resume skill-matching system.
+            You are a conservative resume skill-equivalence classifier.
+
+            Your task is to determine whether any skill in the resume list
+            is IDENTICAL IN MEANING to the job skill.
+
             Resume skills: {remaining_resume_skills}
             Job skill: {missing_skill}
-            
-            Determine whether at least one resume skill is genuinely
-            equivalent to the job skill.
-            
-            Return true ONLY when:
-            - Both terms refer to the same skill or technology.
-            - One term is a recognized abbreviation or alternative name.
-            - Differences are only formatting, capitalization,
-              spacing, hyphens, or singular/plural forms.
-            
-            Return false when a skill is merely related to the job skill.
-            
-            Examples:
-            - RAG and Retrieval-Augmented Generation: true
-            - LLM and LLMs: true
-            - Scikit-learn and scikit-learn: true
-            - Python and Docker: false
-            - Generative AI and OpenAI: false
-            - Vector Search and Vector Database: false
-            - Scikit-learn and Machine Learning: false
-            
-            If match is true:
-            - Put the exact resume skill that caused the match
-              in "resume_skill".
-            
-            If match is false:
-            - Set "resume_skill" to null.
-            
-            Do not invent a resume skill.
-            The value of "resume_skill" must come from the
-            provided Resume skills list.
-            
-            Do not explain your answer.
-            
-            Return exactly this JSON structure:
-            
-            {{"match": true, "resume_skill": "exact resume skill"}}
-            
-            or
-            
-            {{"match": false, "resume_skill": null}}
-            
-            Examples:
 
-            Equivalent skills → true:
-            - Job: LLM
-              Resume: LLMs
-              Result: true
+            DECISION RULES:
+
+            1. Return true only if a resume skill and the job skill refer
+               to the same skill, technology, or capability.
+
+            2. Accept recognized abbreviations, alternative names, and
+               harmless formatting differences.
+
+            3. Do NOT match skills just because they are related, commonly
+               used together, belong to the same field, or have overlapping
+               functionality.
+
+            4. A tool/library is not equivalent to the field it supports.
+               A platform/company is not equivalent to a technology category.
+               A database is not equivalent to the search operation it supports.
+
+            5. When uncertain, return false. Do not guess or infer equivalence.
+
+            IMPORTANT EXAMPLES:
+
+            Job: Retrieval-Augmented Generation
+            Resume: RAG
+            Decision: true
+
+            Job: Natural Language Processing
+            Resume: NLP
+            Decision: true
+
+            Job: LLM
+            Resume: LLMs
+            Decision: true
+
+            Job: Vector Database
+            Resume: Vector Search
+            Decision: false
+
+            Job: Vector Search
+            Resume: Vector Database
+            Decision: false
+
+            Job: Machine Learning
+            Resume: scikit-learn
+            Decision: false
+
+            Job: Generative AI
+            Resume: OpenAI
+            Decision: false
+
+            Job: Docker
+            Resume: Kubernetes
+            Decision: false
+
+            Job: FastAPI
+            Resume: Python
+            Decision: false
+
+            Job: Azure
+            Resume: AWS
+            Decision: false
+
+            Job: LangChain
+            Resume: RAG
+            Decision: false
             
-            - Job: Retrieval-Augmented Generation
-              Resume: RAG
-              Result: true
-            
-            - Job: Natural Language Processing
-              Resume: NLP
-              Result: true
-            
-            - Job: scikit-learn
-              Resume: scikit-learn
-              Result: true
-            
-            
-            Related but NOT equivalent → false:
-            - Job: OpenAI
-              Resume: LLMs
-              Result: false
-            
-            - Job: Vector Database
-              Resume: Vector Search
-              Result: false
-            
-            - Job: Machine Learning
-              Resume: scikit-learn
-              Result: false
-            
-            - Job: Docker
-              Resume: Kubernetes
-              Result: false
-            
-            - Job: FastAPI
-              Resume: Python
-              Result: false
-            
-            - Job: Azure
-              Resume: AWS
-              Result: false
-            
-            - Job: LangChain
-              Resume: RAG
-              Result: false
-            - Job: Vector Database
-              Resume: Vector Search
-              Result: false
-            
-            - Job: Vector Search
-              Resume: Vector Database
-              Result: false
+            Job: scikit-learn
+            Resume: scikit‑learn
+            Decision: true
+
+            OUTPUT RULES:
+
+            - If true, resume_skill must contain the exact matching skill
+              copied from the provided resume skills list.
+            - If false, resume_skill must be null.
+            - Never invent or modify a resume skill.
+            - Return valid JSON only. Do not include explanations or Markdown.
+
+            Return exactly one of these structures:
+
+            {{"match": true, "resume_skill": "exact resume skill"}}
+
+            {{"match": false, "resume_skill": null}}
             """
             response = llm_service.generate(prompt)
-            if response["match"] and response["resume_skill"] in remaining_resume_skills:
+            if (
+                    response["match"] is True
+                    and isinstance(response["resume_skill"], str)
+                    and response["resume_skill"] in remaining_resume_skills
+                    and missing_skill not in matched_skills
+            ):
                 matched_skills.append(missing_skill)
                 missing_skills.remove(missing_skill)
 

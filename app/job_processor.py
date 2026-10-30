@@ -2,7 +2,7 @@ from app.models import Job, ProcessedJob
 
 
 def normalize_text(text: str):
-    return text.lower().strip()
+    return text.lower().strip().replace("‑", "-")
 
 
 def process_job(job: Job) -> ProcessedJob:

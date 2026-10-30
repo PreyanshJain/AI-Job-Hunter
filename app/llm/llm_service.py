@@ -40,7 +40,15 @@ class LLMService:
 
             elapsed_time = time.perf_counter() - start_time
             print(f"Total LLM time: {elapsed_time:.2f} seconds")
-            return json.loads(response["message"]["content"])
+            json_response = json.loads(response["message"]["content"])
+            if isinstance(json_response["match"], bool) and json_response["match"] is True and isinstance(json_response["resume_skill"], str):
+                return json_response
+            elif isinstance(json_response["match"], bool) and json_response["match"] is False and json_response["resume_skill"] is None:
+                return json_response
+            return {
+                "match": False,
+                "resume_skill": None
+            }
 
         except Exception as e:
             print(f"LLM error: {e}")
